@@ -1,89 +1,45 @@
-from keras.models import load_model
-from db_connector import connect_to_db
-from keras.losses import MeanSquaredError
 import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.models import load_model
+from sklearn.model_selection import train_test_split
 
-def fetch_historical_data():
-    model = load_model('../models/modelo_btc.h5', custom_objects={'mse': MeanSquaredError()})
+# Função para tratamento de dados e preparação
+def preprocess_and_predict(btc):
+    # Tratamento de dados
+    # Excluir colunas "Dividends" e "Stock Splits"
+    # btc = btc_hist.drop(columns=["Dividends", "Stock Splits"])
 
-
-    # Conectar ao banco para pegar dados
-    conn = connect_to_db()
-    query = "SELECT open_price, close_price, high_price, low_price, volume FROM historical_data ORDER BY date DESC LIMIT 7"
-    data = pd.read_sql(query, conn)
-    conn.close()
-
-    # Pré-processar os dados conforme necessário pelo modelo
-    # Normalizar, ajustar shape, etc.
-    predicted_value = model.predict(data)
-    return predicted_value
-
-
-# Função para preprocessar os dados
-def preprocess_data(btc_hist):
-    # Excluindo colunas "Dividends" e "Stock Splits"
-    btc = btc_hist.drop(columns=["Dividends", "Stock Splits"])
-    
-    # Converter a coluna Date para o tipo datetime, se ainda não estiver
-    btc['Date'] = pd.to_datetime(btc['Date'])
+    # Converter a coluna Date para o tipo datetime
+    btc['date'] = pd.to_datetime(btc['date'])
 
     # Extrair componentes da data
-    btc['Year'] = btc['Date'].dt.year
-    btc['Month'] = btc['Date'].dt.month
-    btc['Day'] = btc['Date'].dt.day
-    btc['Weekday'] = btc['Date'].dt.weekday  # Segunda-feira = 0, Domingo = 6
-    btc['DayOfYear'] = btc['Date'].dt.dayofyear
-    btc['Quarter'] = btc['Date'].dt.quarter
+    btc['Year'] = btc['date'].dt.year
+    btc['Month'] = btc['date'].dt.month
+    btc['Day'] = btc['date'].dt.day
+    btc['Weekday'] = btc['date'].dt.weekday
+    btc['DayOfYear'] = btc['date'].dt.dayofyear
+    btc['Quarter'] = btc['date'].dt.quarter
 
-    # Excluir a coluna original 'Date'
-    btc = btc.drop(columns=['Date'])
+    # Excluir a coluna 'Date'
+    btc = btc.drop(columns=['date'])
 
-    # Normalizando dados
+    # Normalizar dados
     scaler = MinMaxScaler()
-
-    # Normalizar todas as colunas
     btc = pd.DataFrame(scaler.fit_transform(btc), columns=btc.columns)
 
-    # Separando as features (X) e o target (y)
-    X = btc.drop(columns=['Close', 'High', 'Low'])  # Ajuste conforme necessário
-    y = btc['Close']
+    # Separar as features (X) e o target (y)
+    X = btc.drop(columns=['close_price', 'high_price', 'low_price'])
+    y = btc['close_price']
 
-    # Dividir os dados em treino e teste (a lógica de divisão deve ser aplicada conforme sua necessidade)
-    train_size = int(len(X) * 0.8)
-    X_train, X_test = X[:train_size], X[train_size:]
-    y_train, y_test = y[:train_size], y[train_size:]
+    X = X.values.reshape((X.shape[0], X.shape[1], 1))
 
-    # Converte X_train e X_test para arrays NumPy, caso ainda não sejam.
-    X_train = np.array(X_train)
-    X_test = np.array(X_test)
 
-    # Reestrutura X_train e X_test para ter 3 dimensões.
-    X_train = X_train.reshape((X_train.shape[0], X_train.shape[1], 1))
-    X_test = X_test.reshape((X_test.shape[0], X_test.shape[1], 1))
+    # Carregar o modelo pré-treinado
+    model = load_model('model/seu_modelo.h5')
 
-    return X_train, X_test, y_train, y_test, scaler
-
-# Função principal de previsão
-def make_prediction():
-    # Carregar o modelo
-    model = load_model('models/seu_modelo.h5')
-
-    # Obter dados históricos
-    btc_hist = fetch_historical_data()
-
-    # Preprocessar os dados
-    X_train, X_test, y_train, y_test, scaler = preprocess_data(btc_hist)
-
-    # Fazer previsões
-    predictions = model.predict(X_test)
-
-    # Inverter a normalização para as previsões
-    predictions = scaler.inverse_transform(predictions)
+    # Fazer a previsão
+    predictions = model.predict(X)
 
     return predictions
-
-# Chamando a função de previsão
-if __name__ == "__main__":
-    predictions = make_prediction()
-    print(predictions)
 

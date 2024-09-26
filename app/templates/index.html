@@ -1,24 +1,43 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Crypto Investment Predictions</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Previsão de Criptomoeda</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>Previsões Recentes</h1>
-    <table>
-        <tr>
-            <th>Criptoativo</th>
-            <th>Data da Previsão</th>
-            <th>Valor Previsto</th>
-        </tr>
-        {% for prediction in predictions %}
-        <tr>
-            <td>{{ prediction[1] }}</td>
-            <td>{{ prediction[2] }}</td>
-            <td>{{ prediction[3] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <h1>Previsão de Criptomoeda</h1>
+    <button id="predict-btn">Realizar Previsão</button>
 
-    <h2>Nova Previsão: {{ new_prediction }}</h2>
+    <h2>Resultados:</h2>
+    <div id="results"></div>
+
+    <script>
+        // Função para enviar requisição ao backend
+        $('#predict-btn').click(function() {
+            $('#results').html("Carregando...");  // Mensagem de carregamento
+
+            // Faz a requisição AJAX para o backend (Flask)
+            $.ajax({
+                url: '/predict',
+                method: 'POST',
+                success: function(response) {
+                    // Exibe os resultados das previsões
+                    let predictions = response.predictions;
+                    let actuals = response.actuals;
+
+                    let resultsHtml = "<strong>Previsões:</strong><br>";
+                    for (let i = 0; i < predictions.length; i++) {
+                        resultsHtml += "Previsto: " + predictions[i] + " | Real: " + actuals[i] + "<br>";
+                    }
+                    $('#results').html(resultsHtml);  // Insere os resultados no div de resultados
+                },
+                error: function(error) {
+                    $('#results').html("Ocorreu um erro durante a previsão.");
+                }
+            });
+        });
+    </script>
 </body>
 </html>

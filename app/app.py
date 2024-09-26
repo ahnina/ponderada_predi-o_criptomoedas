@@ -1,22 +1,27 @@
-from flask import Flask, render_template
-from prediction import predict
-from db_connector import connect_to_db
+from flask import Flask, jsonify, render_template
+from database import load_crypto_data_from_db  # Função que carrega os dados do banco
+from prediction import preprocess_and_predict  # Função que faz a previsão
 
 app = Flask(__name__)
 
+# Endpoint para servir a página HTML
 @app.route('/')
 def index():
-    conn = connect_to_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM predictions")
-    predictions = cursor.fetchall()
-    cursor.close()
-    conn.close()
+    return render_template('index.html')  # Renderiza a página HTML
 
-    # Fazer nova previsão (opcional)
-    new_prediction = predict()
+# Endpoint para realizar a previsão
+@app.route('/predict', methods=['POST'])
+def predict():
+    # Carregar dados do banco de dados
+    btc = load_crypto_data_from_db()
 
-    return render_template('index.html', predictions=predictions, new_prediction=new_prediction)
+    # Realizar o tratamento e a previsão
+    predictions= preprocess_and_predict(btc)
+
+    # Retornar os resultados como uma resposta JSON
+    return jsonify({
+        'predictions': predictions.tolist(),
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
