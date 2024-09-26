@@ -1,0 +1,24 @@
+<html>
+<head>
+    <title>Crypto Investment Predictions</title>
+</head>
+<body>
+    <h1>Previsões Recentes</h1>
+    <table>
+        <tr>
+            <th>Criptoativo</th>
+            <th>Data da Previsão</th>
+            <th>Valor Previsto</th>
+        </tr>
+        {% for prediction in predictions %}
+        <tr>
+            <td>{{ prediction[1] }}</td>
+            <td>{{ prediction[2] }}</td>
+            <td>{{ prediction[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Nova Previsão: {{ new_prediction }}</h2>
+</body>
+</html>
