@@ -64,13 +64,14 @@ A aplicação está organizada da seguinte forma:
 ### 1. Clonar o Repositório
 Clone o repositório para sua máquina local:
 ```bash
-git clone <URL_DO_REPOSITORIO>
-cd <NOME_DO_REPOSITORIO>
+git clone https://github.com/ahnina/ponderada_predi-o_criptomoedas.git
+cd ponderada_predi-o_criptomoedas
 ```
 
 ### 2. Instalar as Dependências
 Instale todas as dependências listadas no arquivo `requirements.txt`:
 ```bash
+cd app
 pip install -r requirements.txt
 ```
 
@@ -98,10 +99,6 @@ ou
 ```bash
 bash run.sh
 ```
-
-Aqui está uma versão mais detalhada e compreensível da documentação para a seção de funcionamento da aplicação:
-
----
 
 ## Funcionamento da Aplicação
 
