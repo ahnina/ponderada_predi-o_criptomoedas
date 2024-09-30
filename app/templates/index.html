@@ -3,20 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Previsão de Criptomoeda</title>
+    <title>Previsão do Valor de Fechamento do Bitcoin</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>Previsão de Criptomoeda</h1>
+    <h1>Previsão do Valor de Fechamento do Bitcoin</h1>
     <button id="predict-btn">Realizar Previsão</button>
 
     <h2>Resultados:</h2>
     <div id="results"></div>
 
+    <h2>Gráfico de Preço de Fechamento:</h2>
+    <div id="plot">
+        <!-- Gráfico será inserido aqui -->
+    </div>
+
     <script>
         // Função para enviar requisição ao backend
         $('#predict-btn').click(function() {
             $('#results').html("Carregando...");  // Mensagem de carregamento
+            $('#plot').html("");  // Limpa o gráfico anterior
 
             // Faz a requisição AJAX para o backend (Flask)
             $.ajax({
@@ -24,14 +30,18 @@
                 method: 'POST',
                 success: function(response) {
                     // Exibe os resultados das previsões
+                    console.log(response)
                     let predictions = response.predictions;
-                    let actuals = response.actuals;
 
                     let resultsHtml = "<strong>Previsões:</strong><br>";
                     for (let i = 0; i < predictions.length; i++) {
-                        resultsHtml += "Previsto: " + predictions[i] + " | Real: " + actuals[i] + "<br>";
+                        resultsHtml += "Previsto: " + predictions[i] + "<br>";
                     }
                     $('#results').html(resultsHtml);  // Insere os resultados no div de resultados
+
+                    // Exibir o gráfico recebido (base64)
+                    let imgSrc = 'data:image/png;base64,' + response.img_data;
+                    $('#plot').html('<img src="' + imgSrc + '" alt="Gráfico de Preço de Fechamento">');
                 },
                 error: function(error) {
                     $('#results').html("Ocorreu um erro durante a previsão.");
