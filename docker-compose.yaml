@@ -1,0 +1,27 @@
+version: "3.8"
+services:
+  mysql_db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Amlshpo7
+      MYSQL_DATABASE: crypto_investment_db
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+
+  flask_app:
+    build:
+      context: ./app  # Ajuste o caminho conforme necessário
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_APP: app
+      FLASK_ENV: development
+    depends_on:
+      - mysql_db  # Garante que o MySQL inicie antes do Flask
+    volumes:
+      - ./app:/app  # Monte o diretório correto para garantir que o app.py esteja acessível
+
+volumes:
+  mysql_data:
